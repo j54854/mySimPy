@@ -34,6 +34,12 @@ class Log:
         self.in_seats.append(model.in_seats)
         self.loss.append(model.loss)
 
+    def plot_log(self):
+        plt.plot(self.time, self.in_queue, drawstyle = "steps-post")
+        plt.xlabel("time (minute)")
+        plt.ylabel("queue length")
+        plt.show()
+
 class Model:
     def __init__(self, horizon, cap, ub, mt, vt):
         self.now = 0  # simulation time
@@ -104,11 +110,7 @@ class Model:
 def main():
     model = Model(200, 30, 10, 25, 25)  # horizon, cap, ub, mt, vt
     model.run()
-
-    plt.plot(model.log.time, model.log.in_queue, drawstyle = "steps-post")
-    plt.xlabel("time (minute)")
-    plt.ylabel("queue length")
-    plt.show()
+    model.log.plot_log()
 
 if __name__ == '__main__':
     main()

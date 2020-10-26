@@ -34,6 +34,12 @@ class Log:
         self.loss.append(model.loss)
         self.total.append(model.total)
 
+    def plot_log(self):
+        plt.plot(self.time, self.at_hand, drawstyle = "steps-post")
+        plt.xlabel("time (minute)")
+        plt.ylabel("number of items")
+        plt.show()
+
 class Skelton:
     def __init__(self, horizon):
         self.now = 0  # simulation time
@@ -148,11 +154,7 @@ class Model4Plot(Model):
 def main():
     model = Model4Plot(200, 10, 20, 10, 20)  # horizon, op, oq, lt, init
     model.run()
-
-    plt.plot(model.log.time, model.log.at_hand, drawstyle = "steps-post")
-    plt.xlabel("time (minute)")
-    plt.ylabel("number of items")
-    plt.show()
+    model.log.plot_log()
 
 if __name__ == '__main__':
     main()
