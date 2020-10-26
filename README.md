@@ -1,5 +1,5 @@
 # mySimPy
-Source code for Qiita entries on "SimPy and discrete event simulation"
+Source codes for Qiita entries on "SimPy and discrete event simulation"
 
 * [SimPyで離散事象シミュレーション(1) はじめの一歩](https://qiita.com/j54854/items/687f8842be1d3e212384)
 * [SimPyで離散事象シミュレーション(2) リソースを理解しよう：Container編](https://qiita.com/j54854/items/816d7b974562fc4e93bb)
