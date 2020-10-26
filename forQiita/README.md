@@ -1,4 +1,4 @@
-# mySimPy
+# mySimPy/forQiita
 Qiita記事「SimPyで離散事象シミュレーション」のソースコード
 
 * [SimPyで離散事象シミュレーション(1) はじめの一歩](https://qiita.com/j54854/items/687f8842be1d3e212384)
