@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import random
+import random, math
 
 class Event:
     def __init__(self, time, kind):
@@ -24,134 +24,90 @@ class Calendar:
 class Log:
     def __init__(self):
         self.time = []
-        self.at_hand = []
+        self.in_queue = []
+        self.in_seats = []
         self.loss = []
-        self.total = []
 
     def extend(self, model):
         self.time.append(model.now)
-        self.at_hand.append(model.at_hand)
+        self.in_queue.append(model.in_queue)
+        self.in_seats.append(model.in_seats)
         self.loss.append(model.loss)
-        self.total.append(model.total)
 
-class Skelton:
-    def __init__(self, horizon):
+class Model:
+    def __init__(self, horizon, cap, ub, mt, vt):
         self.now = 0  # simulation time
         self.cal = Calendar(horizon)  # event calendar
-        self.add_some_event()  # an initial event is added
-        self.count = 0  # an example state variable (the number of events triggered)
+        self.add_arrival()  # an arrival event is added
+        self.cap = cap  # number of seats
+        self.ub = ub  # maximum queue length
+        self.mt = mt  # mean of eating time
+        self.vt = vt  # variance of eating time
+        self.in_queue = 0  # number of customers waiting
+        self.in_seats = 0  # number of customers eating
+        self.loss = 0  # opportunity loss
+        self.log = Log()
+        self.log.extend(self)
 
     def add_event(self, dt, kind):
         e = Event(self.now +dt, kind)
         self.cal.append(e)
 
-    def add_some_event(self):
-        self.add_event(random.expovariate(1), 'some_event')
-
-    def print_state(self):
-        print('{} th event occurs at {}'.format(self.count, round(self.now)))
-
-    def run(self):
-        while True:
-            self.print_state()
-            e = self.cal.trigger()
-            print(e)
-            self.now = e.time  # advance the simulation time
-            self.count += 1  # increment the event counter
-            if e.kind == 'end':  # time is up
-                break
-            else:
-                self.add_some_event()  # next event is added
-
-class Model(Skelton):
-    def __init__(self, horizon, op, oq, lt, init):
-        self.now = 0  # simulation time
-        self.cal = Calendar(horizon)  # event calendar
-        self.add_arrival()  # an arrival event is added
-        self.op = op  # ordering point
-        self.oq = oq  # order quantity
-        self.lt = lt  # reprenishment lead time
-        self.at_hand = init  # how many items you have at hand
-        self.loss = 0  # opportunity loss
-        self.orders = []  # list of back orders
-
-    @property
-    def total(self):  # total inventory level including back orders
-        return sum(self.orders) +self.at_hand
-
-    def add_arrival(self):  # arrival of a customer
+    def add_arrival(self):  # a customer's arrival 
         self.add_event(random.expovariate(1), 'arrival')
 
-    def add_fill_up(self):  # replenishment of ordered items
-        self.add_event(self.lt, 'fill_up')
+    def add_departure(self):  # a customer's departure
+        eating_time = 0
+        while eating_time <= 0:  # eating time must be > 0
+            eating_time = random.normalvariate(self.mt, math.sqrt(self.vt))
+        self.add_event(eating_time, 'departure')
 
-    def sell_or_apologize(self):
-        if self.at_hand > 0:
-            self.at_hand -= 1  # an item is sold
+    def wait_or_leave(self):
+        if self.in_queue < self.ub:
+            self.in_queue += 1  # join the queue
         else:
-            self.loss += 1  # sorry we are out of stock
+            self.loss += 1  # give up and go home
 
-    def fill_up(self):  # receive the first order in the list
-        if len(self.orders) > 0:
-            self.at_hand += self.orders.pop(0)
+    def say_goodbye(self):  # finish eating and leave
+        self.in_seats -= 1
 
-    def stocktake(self):
-        if self.total <= self.op:
-            self.orders.append(self.oq)
-            return True  # ordered
-        return False  # not ordered
+    def is_seatable(self):  # at least an empty seat and a waiting customer
+        if self.in_seats < self.cap and self.in_queue > 0:
+            return True
+        return False
+
+    def seat_customer(self):  # move a customer from queue to a seat
+        self.in_queue -= 1
+        self.in_seats += 1
 
     def print_state(self):
-        print('[{}] current level: {}, back order: {}, lost sales: {} '.format(round(self.now), self.at_hand, self.orders, self.loss))
+        print('[{}] in queue: {}, in seats: {}, lost sales: {} '.format(round(self.now), self.in_queue, self.in_seats, self.loss))
 
     def run(self):
         while True:
             self.print_state()
+            self.log.extend(self)
             e = self.cal.trigger()
             print(e)
             self.now = e.time  # advance the simulation time
             if e.kind == 'end':  # time is up
                 break
-            elif e.kind == 'fill_up':
-                self.fill_up()
+            elif e.kind == 'departure':
+                self.say_goodbye()
             elif e.kind == 'arrival':
-                self.sell_or_apologize()
+                self.wait_or_leave()
                 self.add_arrival()
-                ordered = self.stocktake()
-                if ordered:
-                    self.add_fill_up()
-
-class Model4Plot(Model):
-    def __init__(self, horizon, op, oq, lt, init):
-        super().__init__(horizon, op, oq, lt, init)
-        self.log = Log()  # <-- added
-        self.log.extend(self)  # <-- added
-
-    def run(self):
-        while True:
-            self.print_state()
-            self.log.extend(self)  # <-- added
-            e = self.cal.trigger()
-            print(e)
-            self.now = e.time
-            if e.kind == 'end':
-                break
-            elif e.kind == 'fill_up':
-                self.fill_up()
-            elif e.kind == 'arrival':
-                self.sell_or_apologize()
-                self.add_arrival()
-                ordered = self.stocktake()
-                if ordered:
-                    self.add_fill_up()
+            if self.is_seatable():
+                self.seat_customer()
+                self.add_departure()
 
 def main():
-    model = Model4Plot(200, 10, 20, 10, 20)  # horizon, op, oq, lt, init
+    model = Model(200, 30, 10, 25, 25)  # horizon, cap, ub, mt, vt
     model.run()
 
-    plt.plot(model.log.time, model.log.at_hand, drawstyle = "steps-post")
+    plt.plot(model.log.time, model.log.in_queue, drawstyle = "steps-post")
     plt.xlabel("time (minute)")
-    plt.ylabel("number of items")
+    plt.ylabel("queue length")
     plt.show()
 
 if __name__ == '__main__':
