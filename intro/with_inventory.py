@@ -38,19 +38,18 @@ class Model:
 
     def customer(self):
         while True:
-            dt = random.expovariate(1)
-            yield self.env.timeout(dt)
+            yield self.env.timeout(random.expovariate(1))
             self.sell_or_apologize()
-            self.env.signal4ST.succeed()  # signal for stocktaking
+            self.env.activateManager.succeed()  # signal for activating manager
 
     def manager(self):
-        self.env.signal4ST = self.env.event()  # create the first signal
+        self.env.activateManager = self.env.event()  # create the first signal
         while True:
-            yield self.env.signal4ST
+            yield self.env.activateManager
             ordered = self.stocktake()
             if ordered:
                 self.env.process(self.deliverer())  # activate deliverer
-            self.env.signal4ST = self.env.event()  # create the next signal
+            self.env.activateManager = self.env.event()  # create the next signal
             self.print_state()
 
     def deliverer(self):

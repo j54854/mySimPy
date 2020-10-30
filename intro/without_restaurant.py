@@ -68,7 +68,7 @@ class Model:
             eating_time = random.normalvariate(self.mt, math.sqrt(self.vt))
         self.add_event(eating_time, 'departure')
 
-    def wait_or_leave(self):
+    def wait_or_leave(self):  # a new customer arrives
         if self.in_queue < self.ub:
             self.in_queue += 1  # join the queue
         else:
@@ -98,12 +98,12 @@ class Model:
             self.now = e.time  # advance the simulation time
             if e.kind == 'end':  # time is up
                 break
-            elif e.kind == 'departure':
+            elif e.kind == 'departure':  # finish eating and leave
                 self.say_goodbye()
-            elif e.kind == 'arrival':
+            elif e.kind == 'arrival':  # a new customer arrives
                 self.wait_or_leave()
                 self.add_arrival()
-            if self.is_seatable():
+            if self.is_seatable():  # at least an empty seat and a waiting customer
                 self.seat_customer()
                 self.add_departure()
 
