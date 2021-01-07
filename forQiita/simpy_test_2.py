@@ -16,7 +16,7 @@ def manager(env):
 
 def deliverer(env):
     yield env.timeout(5)  # delivery lead time = 5
-    env.model.put(20)  # back order is recieved
+    yield env.model.put(20)  # back order is received
     env.model.ordered = False  # no back order to receive
 
 def customer(env):
@@ -24,11 +24,11 @@ def customer(env):
         time_to = random.expovariate(1)
         yield env.timeout(time_to)
         how_many = random.randint(1, 3)
-        env.model.get(how_many)
+        yield env.model.get(how_many)
         env.stocktake.succeed()  # signal for stocktaking (event)
 
 def report(env):
-    print('[{}] current level: {}, orderd: {}, queue length: {} '.format(round(env.now), env.model.level, env.model.ordered, len(env.model.get_queue)))
+    print('[{}] current level: {}, ordered: {}, queue length: {} '.format(round(env.now), env.model.level, env.model.ordered, len(env.model.get_queue)))
 
 def main():
     env = simpy.Environment()

@@ -78,9 +78,7 @@ class Model:
         self.in_seats -= 1
 
     def is_seatable(self):  # at least an empty seat and a waiting customer
-        if self.in_seats < self.cap and self.in_queue > 0:
-            return True
-        return False
+        return self.in_seats < self.cap and self.in_queue > 0
 
     def seat_customer(self):  # move a customer from queue to a seat
         self.in_queue -= 1
@@ -94,7 +92,6 @@ class Model:
             self.print_state()
             self.log.extend(self)
             e = self.cal.trigger()
-            print(e)
             self.now = e.time  # advance the simulation time
             if e.kind == 'end':  # time is up
                 break

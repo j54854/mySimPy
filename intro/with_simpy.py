@@ -1,7 +1,6 @@
 import random
 import simpy
 
-
 class Skelton:
     def __init__(self, env):
         self.env = env  # pointer to the SimPy environment
@@ -23,7 +22,6 @@ class Skelton:
                 self.print_state()
                 self.env.step()
 
-
 class Skelton2:
     def __init__(self, env):
         self.env = env  # pointer to the SimPy environment
@@ -43,7 +41,6 @@ def process_func(env):  # an example process function
         env.model.print_state()
         yield simpy.Timeout(env, random.expovariate(1))
         env.model.count += 1  # <- Skelton's update()
-
 
 class Skelton3(Skelton2):
     def __init__(self, env):
@@ -70,7 +67,6 @@ class Skelton3(Skelton2):
         print('>> sub process B is started at {}'.format(round(self.env.now)))
         yield self.env.timeout(10) # shortcut for simpy.Timeout()
         print('>> sub process B is finished at {}'.format(round(self.env.now)))
-
 
 def main():
     env = simpy.Environment()

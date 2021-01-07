@@ -76,7 +76,7 @@ class Model(Skelton):
         self.add_arrival()  # an arrival event is added
         self.op = op  # ordering point
         self.oq = oq  # order quantity
-        self.lt = lt  # reprenishment lead time
+        self.lt = lt  # replenishment lead time
         self.at_hand = init  # how many items you have at hand
         self.loss = 0  # opportunity loss
         self.orders = []  # list of back orders
